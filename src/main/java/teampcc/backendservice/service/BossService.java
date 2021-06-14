@@ -17,6 +17,26 @@ public class BossService {
 
     @Autowired
     BossRepository bossRepository;
+    //create
+    public void addUser(BossEntity user){
+        bossRepository.save(user);
+    }
+    //read
+    public Object getAllUser(){
+        return (Object) bossRepository.findAll();
+    }
+    public Object getUserById(Long id){
+        return bossRepository.findById(id);
+    }
+    //update
+    public  void updateUser(BossEntity user){
+        bossRepository.save(user);
+    }
+    //delete
+    public void deleteUserById(Long id){
+        bossRepository.deleteById(id);
+    }
+
 
 
 

@@ -11,34 +11,39 @@ import teampcc.backendservice.service.BossService;
 public class BossController {
     @Autowired
     BossService bossService;
+    //create
+    @PostMapping(value = "/addUser")
+    public void addUser(@RequestBody BossEntity user){
+        bossService.addUser(user);
+    }
+    //read
     @GetMapping(value = "/getAllUser")
     public Object getAllUser(){
-    return "whadtss";
-        }
-
-    @GetMapping(value = "/getuserById")
-    public Object getuserById(){
-        return "test";
+        Object userList = bossService.getAllUser();
+        return userList;
     }
 
-    @PostMapping(value = "/createuser")
-    public void createUser(@RequestBody String userID) {
+    @GetMapping(value = "/getuserById")
+    public Object getuserById(@RequestParam("id") Long id){
+        Object user = bossService.getUserById(id);
+        return user;
+    }
+
+    //update
+    @PostMapping(value = "/updateUser")
+    public void updateUser(@RequestBody BossEntity user) {
         try {
-//            JSONObject id = new JSONObject(userID);
-            System.out.println(Integer.parseInt((userID)));
-//            bossService.deleteUserByID(id.getInt("userID"));
+            bossService.updateUser(user);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
+    //delete
     @PostMapping(value = "/deleteUserById")
-    public void deleteUserByID(@RequestBody String userID) {
+    public void deleteUserByID(@RequestBody Long id) {
         try {
-//            JSONObject id = new JSONObject(userID);
-            System.out.println(Integer.parseInt((userID)));
-//            bossService.deleteUserByID(id.getInt("userID"));
+            bossService.deleteUserById(id);
         } catch (Exception e) {
             e.printStackTrace();
         }
