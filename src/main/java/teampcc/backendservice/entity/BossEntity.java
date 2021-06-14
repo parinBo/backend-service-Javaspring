@@ -9,7 +9,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Entity
 @Table(name="bossuser")
 public class BossEntity implements java.io.Serializable {
-    private Integer id;
+    private Long id;
     private String code;
     private String fname;
     private String lname;
@@ -22,7 +22,7 @@ public class BossEntity implements java.io.Serializable {
     public BossEntity() {
     }
 
-    public BossEntity(Integer userID,String code, String userFName, String userLastname, Integer userAge,
+    public BossEntity(Long userID,String code, String userFName, String userLastname, Integer userAge,
                     String userGender, Date userBirth, Date timeStamp,String saveBy) {
         this.id = userID;
         this.code = code;
@@ -38,11 +38,11 @@ public class BossEntity implements java.io.Serializable {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id", unique = true, nullable = false)
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -90,6 +90,7 @@ public class BossEntity implements java.io.Serializable {
         this.sex = sex;
     }
 
+    @Temporal(TemporalType.DATE)
     @Column(name = "birth")
     public Date getBirthDate() {
         return birth;
@@ -99,6 +100,7 @@ public class BossEntity implements java.io.Serializable {
         this.birth = birth;
     }
 
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "dateAt")
     public Date getDateAt() {
         return dateAt;
