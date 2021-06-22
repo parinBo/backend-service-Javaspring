@@ -9,6 +9,8 @@ import teampcc.backendservice.entity.BossEntity;
 import teampcc.backendservice.repository.BossRepository;
 
 import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @Transactional
@@ -18,27 +20,59 @@ public class BossService {
     @Autowired
     BossRepository bossRepository;
     //create
-    public void addUser(BossEntity user){
+    public void addOrUpdateUser(BossEntity user){
         bossRepository.save(user);
     }
     //read
     public Object getAllUser(){
         return (Object) bossRepository.findAll();
     }
+
     public Object getUserById(Long id){
         return bossRepository.findById(id);
     }
-    //update
-    public  void updateUser(BossEntity user){
-        bossRepository.save(user);
+
+    public List<BossEntity> getUserByFname(String name){
+        try{
+            Optional<List<BossEntity>> data = bossRepository.findUserByFname(name);
+            return (data.isPresent())?data.get():null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+    public List<BossEntity> getUserByBirthDate(String date){
+        try{
+            Optional<List<BossEntity>> data = bossRepository.findUserBybirthdate(date);
+            return (data.isPresent())?data.get():null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<BossEntity> getUserByFullname(String name,String lname){
+        try{
+            Optional<List<BossEntity>> data = bossRepository.findUserByFullName(name,lname);
+            return (data.isPresent())?data.get():null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<BossEntity> getUserByAge(Integer age){
+        try{
+            Optional<List<BossEntity>> data = bossRepository.findUserByAge(age);
+            return (data.isPresent())?data.get():null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     //delete
     public void deleteUserById(Long id){
         bossRepository.deleteById(id);
     }
-
-
-
-
-
 }

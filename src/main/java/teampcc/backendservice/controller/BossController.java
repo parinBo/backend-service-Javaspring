@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import teampcc.backendservice.entity.BossEntity;
 import teampcc.backendservice.service.BossService;
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 
 @RestController
 @RequestMapping("/bossCtrl")
@@ -12,9 +13,9 @@ public class BossController {
     @Autowired
     BossService bossService;
     //create
-    @PostMapping(value = "/addUser")
-    public void addUser(@RequestBody BossEntity user){
-        bossService.addUser(user);
+    @PostMapping(value = "/addOrUpdateUser")
+    public void addOrUpdateUser(@RequestBody BossEntity user){
+        bossService.addOrUpdateUser(user);
     }
     //read
     @GetMapping(value = "/getAllUser")
@@ -29,15 +30,6 @@ public class BossController {
         return user;
     }
 
-    //update
-    @PostMapping(value = "/updateUser")
-    public void updateUser(@RequestBody BossEntity user) {
-        try {
-            bossService.updateUser(user);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     //delete
     @PostMapping(value = "/deleteUserById")
@@ -48,8 +40,4 @@ public class BossController {
             e.printStackTrace();
         }
     }
-
-
-
-
 }
