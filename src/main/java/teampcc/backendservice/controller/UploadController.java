@@ -1,12 +1,9 @@
 package teampcc.backendservice.controller;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.nio.file.Files;
 import com.google.gson.Gson;
 
+import org.hibernate.mapping.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +39,7 @@ public class UploadController {
     public List<FileInfo> listFile() {
         List<FileInfo> fileInfos = filesStorageService.loadAll().map(path -> {
             String filename = path.getFileName().toString();
-            // String url = MvcUriComponentsBuilder
-            // .fromMethodName(UploadController.class, "listFile",
-            // path.getFileName().toString()).build().toString();
-            return new FileInfo(filename, "url");
+            return new FileInfo(filename, path.getRoot().toString());
         }).collect(Collectors.toList());
         return fileInfos;
     }
@@ -56,46 +51,49 @@ public class UploadController {
         return base64;
     }
 
-    Map<String,ByteArrayOutputStream> dataMap = new HashMap<String,ByteArrayOutputStream>();
+    private Path root = Paths.get("./src/main/resources/uploads");
+    Map<String, ByteArrayOutputStream> dataMap = new HashMap<String, ByteArrayOutputStream>();
+
     @PostMapping(value = "/upload")
     public ResponseEntity uploadFiles(HttpServletRequest request, HttpServletResponse response) throws Exception {
         BufferedReader reader = request.getReader();
-        System.out.println("****POST****");
         var data = new Gson().fromJson(reader.readLine(), Map.class);
-        dataMap.put(data.get("name").toString(),new ByteArrayOutputStream());
-        System.out.println(data.get("name"));
+        System.out.println("------POST--------" + "\n" + data.get("name") + "\n" + "---------------------");
+        System.out.println(data.get("data"));
         return ResponseEntity.created(URI.create(request.getRequestURI() + "?uid=" + data.get("name")))
-                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Location")
-                .header(HttpHeaders.RANGE, "bytes 0-/*").header(HttpHeaders.CONNECTION, "keep-alive")
-                .body("");
+                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Location").header(HttpHeaders.RANGE, "bytes 0-/*")
+                .header(HttpHeaders.CONNECTION, "keep-alive").body("");
     }
 
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    private  Path root = Paths.get("./src/main/resources/uploads");
     @PutMapping(value = "/upload")
     public ResponseEntity uploadFilesWithName(HttpServletRequest request, HttpServletResponse response,
-            @RequestParam("uid") String uid) throws Exception {
+            @RequestParam("uid") String uid) {
         var message = "";
-        HttpHeaders header = new HttpHeaders(); 
+        HttpHeaders header = new HttpHeaders();
         var match = request.getHeader("content-range").split("[0-9]*-")[1].split("/");
-        var reqToInputStream = StreamUtils.copyToByteArray(request.getInputStream());
-        outputStream.write(reqToInputStream);
-        // if finish write file
-        if(Long.valueOf(match[0])+1 == Long.valueOf(match[1])){
-            System.out.println("success File: "+uid+ " "+match[0]+" : "+match[1]);
-            System.out.println(outputStream.size());
-            System.out.println(outputStream.toByteArray());
-            InputStream finishStream = new ByteArrayInputStream(outputStream.toByteArray());
-            Files.copy(finishStream,root.resolve(uid),StandardCopyOption.REPLACE_EXISTING);
-            message = "Upload Complete";
-        } 
+        try {
+            var reqInputStream_To_Bytes = StreamUtils.copyToByteArray(request.getInputStream());
+            dataMap.get(uid).write(reqInputStream_To_Bytes);
+            System.out.println("********  Put : "+uid+"  ********");
+            System.out.println(
+                    "content-length Now: " + request.getContentLength() + " ::: " + request.getHeader("content-range"));
+            System.out.println(
+                    uid + " sum : " + dataMap.get(uid).toByteArray().length + "\n" + "************************");
+            if (Long.valueOf(match[0]) + 1 == Long.valueOf(match[1])) {
+                System.out.println("-----------------------");
+                System.out.println("success File: " + uid + " " + match[0] + " : " + match[1] + " == "
+                        + dataMap.get(uid).toByteArray().length);
+                Files.write(root.resolve(uid), dataMap.get(uid).toByteArray());
+                message = "Upload Complete";
+            }
 
-        System.out.println("********Put********");
-        System.out.println(uid);
-        System.out.println("content-length Now: "+request.getContentLength()+" ::: "+request.getHeader("content-range"));
-        System.out.println(match[0]+"  "+match[1]);
-        System.out.println(uid+" : "+reqToInputStream);
-        System.out.println(uid+" sum : "+outputStream.toByteArray() +"  "+outputStream.toByteArray().length);
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println(uid);
+            System.out.println(e.getMessage());
+
+        }
+
         header.set(HttpHeaders.CONNECTION, "keep-alive");
         header.set("Keep-Alive", "timeout=5");
         return ResponseEntity.ok().body(message);
